@@ -1,0 +1,12 @@
+# Список рекламных и трекерных доменов (формат - в README.md). Домен блокируется вместе с поддоменами.
+# Блок: российские рекламные сети и счётчики
+mc.yandex.ru                 # Яндекс.Метрика
+mc.yandex.com
+an.yandex.ru                 # рекламная сеть Яндекса
+yandexadexchange.net
+adfox.ru
+adriver.ru
+ad.mail.ru
+top-fwz1.mail.ru             # счётчик Mail.ru
+counter.yadro.ru
+tns-counter.ru
