@@ -1,5 +1,8 @@
 # OpenWRT-VM-PROXY-ads: списки рекламных и трекерных доменов
 
+> **English summary.** Small shared lists of advertising/tracker/counter domains (Russian and global) for the **OpenWRT-VM-PROXY** router project. `tools/build.py` turns each `lists/ads-*.txt` into an Xray/v2ray `geosite` file in `dist/` (`ads-ru.txt` -> `geosite_ADS-RU.dat`, tag `ADS-RU`). On the router the file is appended to `geosite.dat` with `pw2-geosite` (PassWall2 ignores `ext:` entries) and used as `geosite:ads-ru`. Contributions: public ad/tracker domains only, no personal data. License: MIT. Documentation is in Russian.
+
+
 Небольшие общие списки доменов рекламы, трекеров и счётчиков для прокси-роутера проекта **OpenWRT-VM-PROXY**. Дополняют стандартные списки (`geosite:category-ads-all`, российская база `runetfreedom`) тем, что в них не попало или попало с опозданием. Формат совместим с Xray/v2ray (`geosite`).
 
 ## Зачем отдельный репозиторий
