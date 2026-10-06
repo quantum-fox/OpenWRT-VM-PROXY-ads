@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Собирает dist/geosite_custom.dat (формат geosite для Xray) из lists/ads-custom.txt. Тег списка: CUSTOM-ADS.
+"""Собирает dist/geosite_CUSTOM-ADS.dat (формат geosite для Xray) из lists/ads-custom.txt. Тег списка: CUSTOM-ADS.
 Типы правил: домен (по умолчанию, сам домен и поддомены) / full: (точное имя) / regexp: (регулярное выражение)."""
 import os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-SRC = os.path.join(ROOT, 'lists', 'ads-custom.txt'); OUT = os.path.join(ROOT, 'dist', 'geosite_custom.dat')
+SRC = os.path.join(ROOT, 'lists', 'ads-custom.txt'); OUT = os.path.join(ROOT, 'dist', 'geosite_CUSTOM-ADS.dat')
 
 def varint(n):
     out = bytearray()

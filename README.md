@@ -5,14 +5,14 @@
 ## Зачем отдельный репозиторий
 - Список меняется часто (каждый день могут появляться новые домены), а скрипты роутера - редко. Отдельный репозиторий позволяет обновлять список, не выпуская новую версию продукта.
 - Любой может предложить домен (Pull Request / Issue) и увидеть историю: что и почему добавлено.
-- Роутер скачивает только готовый маленький файл `dist/geosite_custom.dat`.
+- Роутер получает только готовый маленький файл `dist/geosite_CUSTOM-ADS.dat`.
 
 ## Что внутри
 | Файл | Назначение |
 |---|---|
 | `lists/ads-custom.txt` | **главный список**: один домен на строку, комментарии `#`; доменом блокируется сам домен и все поддомены |
-| `tools/build.py` | собирает `dist/geosite_custom.dat` из списка (тег `CUSTOM-ADS`) |
-| `dist/geosite_custom.dat` | готовый файл для роутера (создаётся `build.py`; в Git хранится) |
+| `tools/build.py` | собирает `dist/geosite_CUSTOM-ADS.dat` из списка (тег `CUSTOM-ADS`) |
+| `dist/geosite_CUSTOM-ADS.dat` | готовый файл для роутера (создаётся `build.py`; в Git хранится) |
 
 ## Формат списка (`lists/ads-custom.txt`)
 ```
@@ -25,13 +25,15 @@ regexp:^ad[0-9]+\.example\.org$   # регулярное выражение
 
 ## Как собрать
 ```
-python tools/build.py          # -> dist/geosite_custom.dat
+python tools/build.py          # -> dist/geosite_CUSTOM-ADS.dat
 ```
 
 ## Как подключить на роутере (проект OpenWRT-VM-PROXY)
-1. Положить `geosite_custom.dat` в `/usr/share/v2ray/` на роутере.
-2. Добавить в `/etc/pw2-routing.conf` в `ADS_GEOSITE_EXTRA` значение `ext:geosite_custom.dat:custom-ads` (в планах: команда `pw2-ads update` будет скачивать файл сама по адресу репозитория; пока - вручную).
-3. `pw2-routing-apply`.
+PassWall2 не поддерживает записи `ext:` в правилах, поэтому файл дописывается в стандартный `geosite.dat` командой `pw2-geosite` и становится обычным тегом `geosite:custom-ads`:
+1. Положить `geosite_CUSTOM-ADS.dat` на роутер в `/usr/share/pw2/data/` (например `ssh openwrt "cat > /usr/share/pw2/data/geosite_CUSTOM-ADS.dat" < dist\geosite_CUSTOM-ADS.dat`).
+2. `ssh openwrt pw2-geosite merge`.
+3. В `/etc/pw2-routing.conf` добавить `ADS_GEOSITE_EXTRA="geosite:custom-ads"`, затем `pw2-routing-apply`.
+(В планах: команда `pw2-ads update`, которая сама скачает файл из этого репозитория; пока - вручную.)
 
 ## Правила для вкладов
 - Только публичные домены рекламных и трекерных сервисов. **Никаких** личных данных, адресов почты, IP-адресов, ссылок с токенами.
