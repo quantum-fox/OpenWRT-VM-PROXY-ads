@@ -50,3 +50,9 @@ ru = [(2, d) for d in dedupe(set(ru_up) | {v for k, v in own_ru if k == 2})] + [
 gl = [(2, d) for d in dedupe(set(gl_up) | {v for k, v in own_gl if k == 2})] + [(k, v) for k, v in own_gl if k != 2]
 write('ADS-RU', ru, os.path.join(ROOT, 'dist', 'geosite_ADS-RU.dat'))
 write('ADS-GLOBAL', gl, os.path.join(ROOT, 'dist', 'geosite_ADS-GLOBAL.dat'))
+
+import hashlib   # контрольные суммы для pw2-ads update на роутере (прикладываются к релизу вместе с файлами dist/)
+with open(os.path.join(ROOT, 'dist', 'SHA256SUMS'), 'w', newline='\n') as f:
+    for n in ('geosite_ADS-GLOBAL.dat', 'geosite_ADS-RU.dat'):
+        f.write(hashlib.sha256(open(os.path.join(ROOT, 'dist', n), 'rb').read()).hexdigest() + '  ' + n + '\n')
+print('dist/SHA256SUMS записан')
