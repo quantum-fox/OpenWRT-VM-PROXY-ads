@@ -1,49 +1,47 @@
-# OpenWRT-VM-PROXY-ads: списки рекламных и трекерных доменов
+# OpenWRT-VM-PROXY-ads: база рекламных и трекерных доменов
 
-> **English summary.** Small shared lists of advertising/tracker/counter domains (Russian and global) for the **OpenWRT-VM-PROXY** router project. `tools/build.py` turns each `lists/ads-*.txt` into an Xray/v2ray `geosite` file in `dist/` (`ads-ru.txt` -> `geosite_ADS-RU.dat`, tag `ADS-RU`). On the router the file is appended to `geosite.dat` with `pw2-geosite` (PassWall2 ignores `ext:` entries) and used as `geosite:ads-ru`. Contributions: public ad/tracker domains only, no personal data. License: MIT. Documentation is in Russian.
+> **English summary.** A self-contained, regularly updated base of advertising / tracker / counter domains for the **OpenWRT-VM-PROXY** router project (~205k domains). `lists/upstream` stores the merged public sources as plain text (runetfreedom, AdGuard DNS filter, Peter Lowe's list; deduplicated), `lists/own` holds the maintainer's additions. `tools/build.py` produces ready Xray/v2ray `geosite` files in `dist/`: `geosite_ADS-RU.dat` (tag `ADS-RU`, Russian zones + own RU entries) and `geosite_ADS-GLOBAL.dat` (tag `ADS-GLOBAL`, everything else). On the router, `pw2-geosite` appends the files to `geosite.dat` (PassWall2 ignores `ext:` entries) and they are used as `geosite:ads-ru` / `geosite:ads-global`. License: GPL-3.0 (see `NOTICE.md`). Documentation is in Russian.
 
-
-Небольшие общие списки доменов рекламы, трекеров и счётчиков для прокси-роутера проекта **OpenWRT-VM-PROXY**. Дополняют стандартные списки (`geosite:category-ads-all`, российская база `runetfreedom`) тем, что в них не попало или попало с опозданием. Формат совместим с Xray/v2ray (`geosite`).
-
-## Зачем отдельный репозиторий
-- Списки меняются часто (каждый день могут появляться новые домены), а скрипты роутера - редко: так их можно обновлять без нового выпуска продукта.
-- Любой может предложить домен (Pull Request / Issue) и увидеть историю: что и почему добавлено.
-- Роутер получает только готовые маленькие файлы из `dist/`.
+Полная собственная база рекламных и трекерных доменов (~205 тысяч) для прокси-роутера проекта **OpenWRT-VM-PROXY**: всё лежит в Git в виде обычного текста, чтобы база всегда была под рукой и её можно было дополнять.
 
 ## Что внутри
-| Файл | Назначение |
+| Путь | Назначение |
 |---|---|
-| `lists/ads-ru.txt` | **российские** рекламные сети, счётчики, трекеры |
-| `lists/ads-global.txt` | остальные страны (мировые рекламные и трекерные домены) |
-| `tools/build.py` | собирает по одному файлу `dist/geosite_ADS-<ИМЯ>.dat` на каждый список (`ads-ru.txt` → `geosite_ADS-RU.dat`, тег `ADS-RU`; `ads-global.txt` → `geosite_ADS-GLOBAL.dat`, тег `ADS-GLOBAL`); пустой список файл не создаёт |
-| `dist/` | готовые файлы для роутера (создаются `build.py`; в Git хранятся) |
+| `lists/upstream/*.txt` | **чужие публичные базы** в виде текста, без повторов между источниками: `runetfreedom.txt` (~149 тыс.), `adguard.txt` (~57 тыс. новых), `peterlowe.txt` (~0,3 тыс. новых) |
+| `lists/own/ads-ru.txt`, `lists/own/ads-global.txt` | **ваши дополнения**: российские и зарубежные (сюда добавляйте домены вручную) |
+| `tools/update-upstream.py` | скачивает источники и обновляет `lists/upstream/` |
+| `tools/build.py` | собирает готовые файлы в `dist/` из `upstream + own` |
+| `dist/geosite_ADS-RU.dat` | тег `ADS-RU`: российские зоны (`.ru`, `.su`, `.рф`) + `lists/own/ads-ru.txt` (~1,4 тыс. правил) |
+| `dist/geosite_ADS-GLOBAL.dat` | тег `ADS-GLOBAL`: все остальные (~203 тыс. правил, 5,3 МБ) |
 
-Разделение на RU и остальные нужно, чтобы можно было включать их независимо (например, российский список - только тем, кто пользуется российскими сервисами).
+Разделение на RU и остальные нужно, чтобы файлы можно было включать независимо. Из `upstream` в RU попадают домены в российских зонах; прочее - в GLOBAL. Российские рекламные сервисы в зонах `.com` и т. п. (например, `yandexadexchange.net`) добавляйте в `lists/own/ads-ru.txt`.
 
-## Формат списка
+## Как пользоваться
+```
+python tools/update-upstream.py     # скачать источники (раз в неделю-месяц); при блокировках: --proxy http://10.99.77.1:8080
+python tools/build.py               # собрать dist/*.dat (несколько секунд)
+git add -A; git commit -m "Обновление базы"; git push
+```
+Что изменилось после обновления источников - видно в `git diff --stat lists/upstream`.
+
+## Формат `lists/own/*.txt`
 ```
 # комментарий
 example-ads.com              # домен и все поддомены
 full:tracker.example.net     # только точное имя
 regexp:^ad[0-9]+\.example\.org$   # регулярное выражение
 ```
-Не добавляйте домены, без которых сайт перестаёт работать (CDN, API, логин): блокируются **все** запросы к домену. Перед добавлением проверьте домен, чтобы он действительно рекламный/счётчик (например, DevTools браузера, вкладка «Сеть»).
-
-## Как собрать
-```
-python tools/build.py          # -> dist/geosite_ADS-RU.dat (и другие)
-```
+Не добавляйте домены, без которых сайт перестаёт работать (CDN, API, вход): блокируются **все** запросы к домену. Сайты, чья реклама приходит с тех же адресов, что и сам сайт (YouTube, Авито), этим способом не блокируются - для них нужен uBlock Origin в браузере.
 
 ## Как подключить на роутере (проект OpenWRT-VM-PROXY)
-PassWall2 не поддерживает записи `ext:` в правилах, поэтому файл дописывается в стандартный `geosite.dat` командой `pw2-geosite` и становится обычным тегом `geosite:ads-ru`:
-1. Положить `geosite_ADS-RU.dat` на роутер в `/usr/share/pw2/data/` (например `ssh openwrt "cat > /usr/share/pw2/data/geosite_ADS-RU.dat" < dist\geosite_ADS-RU.dat`).
-2. `ssh openwrt pw2-geosite merge`.
-3. В `/etc/pw2-routing.conf` добавить `ADS_GEOSITE_EXTRA="geosite:ads-ru"`, затем `pw2-routing-apply`.
-(В планах: команда `pw2-ads update`, которая сама скачает файлы из этого репозитория; пока - вручную.)
+Проект уже содержит готовые копии этих файлов и подключает их сам (`pw2-update`, версия 1.3.0 и выше). Вручную, если нужна свежая версия базы:
+1. Положить `geosite_ADS-GLOBAL.dat` и `geosite_ADS-RU.dat` на роутер в `/usr/share/pw2/data/` (`ssh openwrt "cat > /usr/share/pw2/data/geosite_ADS-GLOBAL.dat" < dist\geosite_ADS-GLOBAL.dat`, то же для `ADS-RU`).
+2. `ssh openwrt pw2-geosite refresh` (подключает файлы к `geosite.dat` заново), затем `pw2-routing-apply`.
+PassWall2 не поддерживает записи `ext:` в правилах, поэтому файлы дописываются в стандартный `geosite.dat` командой `pw2-geosite` и используются как `geosite:ads-global` и `geosite:ads-ru`.
 
 ## Правила для вкладов
 - Только публичные домены рекламных и трекерных сервисов. **Никаких** личных данных, адресов почты, IP-адресов, ссылок с токенами.
 - Один домен - одна строка, в комментарии указывайте источник или причину.
 
 ## Лицензия
-MIT - см. [LICENSE](LICENSE). Автор: quantum-fox.
+GPL-3.0 - см. [LICENSE](LICENSE) и [NOTICE.md](NOTICE.md) (источники и их лицензии). Автор дополнений: quantum-fox.
